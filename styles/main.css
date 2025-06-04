@@ -1046,3 +1046,35 @@ textarea:focus {
 .focus\:ring-red-500:focus {
     box-shadow: 0 0 0 2px #DC143C;
 }
+
+.placeholder-gray-500::placeholder {
+    color: #6B7280;
+    opacity: 1;
+}
+
+.md\:max-w-xs {
+    max-width: 20rem;
+}
+
+input[type="text"]#equipment-search {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+    .flex-col {
+        flex-direction: column;
+    }
+}
+
+@media (min-width: 768px) {
+    .md\:flex-row {
+        flex-direction: row;
+    }
+    
+    .md\:max-w-xs {
+        max-width: 20rem;
+    }
+}
