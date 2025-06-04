@@ -935,3 +935,18 @@
     border-radius: 6px;
     margin-bottom: 16px;
 }
+@media (max-width: 768px) {
+    .flex-wrap {
+        flex-wrap: wrap;
+    }
+    
+    .inline-flex.items-center {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .inline-flex.items-center svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+}

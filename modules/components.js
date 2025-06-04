@@ -468,7 +468,7 @@ const components = {
             <form id="inoperant-form" class="space-y-4">
                 <div class="alert alert-warning">
                     <p class="font-semibold">Atenção!</p>
-                    <p class="text-sm">Você está prestes a marcar este equipamento como INOPERANTE. Esta ação criará um registro permanente no sistema.</p>
+                    <p class="text-sm">Lançamento de inoperância dos materiais.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

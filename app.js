@@ -216,15 +216,48 @@ class CBMERJApp {
                     </span>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-900">${equipment.lastMaintenance ? utils.formatDate(equipment.lastMaintenance.toDate()) : 'Nunca'}</td>
-                <td class="px-6 py-4 text-sm space-x-2">
-                    <button onclick="components.viewEquipment('${doc.id}')" class="text-blue-600 hover:text-blue-800">Ver</button>
-                    <button onclick="components.editEquipment('${doc.id}')" class="text-green-600 hover:text-green-800">Editar</button>
-                    ${equipment.status !== 'inativo' ? `
-                        <button onclick="maintenance.scheduleForEquipment('${doc.id}')" class="text-purple-600 hover:text-purple-800">Manutenção</button>
-                        <button onclick="components.openInoperantModal('${doc.id}')" class="text-red-600 hover:text-red-800">Inoperante</button>
-                    ` : `
-                        <button onclick="components.viewInoperantRecord('${doc.id}')" class="text-gray-600 hover:text-gray-800">Ver Inoperância</button>
-                    `}
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="components.viewEquipment('${doc.id}')" 
+                                class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 text-sm font-medium rounded-md hover:bg-blue-100 transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            Ver
+                        </button>
+                        <button onclick="components.editEquipment('${doc.id}')" 
+                                class="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-md hover:bg-green-100 transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Editar
+                        </button>
+                        ${equipment.status !== 'inativo' ? `
+                            <button onclick="maintenance.scheduleForEquipment('${doc.id}')" 
+                                    class="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-700 text-sm font-medium rounded-md hover:bg-purple-100 transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                                </svg>
+                                Cadastrar manutenção
+                            </button>
+                            <button onclick="components.openInoperantModal('${doc.id}')" 
+                                    class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                </svg>
+                                Cadastrar inoperância
+                            </button>
+                        ` : `
+                            <button onclick="components.viewInoperantRecord('${doc.id}')" 
+                                    class="inline-flex items-center px-3 py-1.5 bg-gray-50 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-100 transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Ver Inoperância
+                            </button>
+                        `}
+                    </div>
                 </td>
             `;
             tableBody.appendChild(row);
