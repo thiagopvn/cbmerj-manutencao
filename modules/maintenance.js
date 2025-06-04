@@ -55,13 +55,17 @@ const maintenance = {
             card.className += ' border-red-300';
         }
         
+        const periodicInfo = data.periodicIndex && data.periodicTotal 
+            ? `<span class="text-xs text-purple-600">(${data.periodicIndex}/${data.periodicTotal})</span>` 
+            : '';
+        
         card.innerHTML = `
             <div class="flex justify-between items-start mb-2">
-                <h4 class="font-medium text-sm">${data.equipmentName}</h4>
+                <h4 class="font-medium text-sm">${data.equipmentName} ${periodicInfo}</h4>
                 ${isOverdue ? '<span class="text-red-500 text-xs">ATRASADA</span>' : ''}
             </div>
             <p class="text-xs text-gray-600 mb-2">${MAINTENANCE_TYPES[data.type]}</p>
-            <p class="text-xs text-gray-500 mb-3">Prazo: ${utils.formatDate(new Date(data.dueDate))}</p>
+            <p class="text-xs text-gray-500 mb-3">Prazo: ${utils.formatDateBR(new Date(data.dueDate))}</p>
             <div class="flex gap-2">
                 ${this.getMaintenanceActions(id, data.status)}
             </div>
@@ -152,14 +156,23 @@ const maintenance = {
 
     async scheduleMaintenance(data) {
         try {
-            await database.create('maintenance', {
-                ...data,
-                status: 'pendente'
-            });
+            const periodicTypes = ['trimestral', 'semestral', 'anual'];
+            const isPeriodicMaintenance = periodicTypes.includes(data.type);
+            
+            if (isPeriodicMaintenance) {
+                await this.schedulePeriodicMaintenance(data);
+            } else {
+                await database.create('maintenance', {
+                    ...data,
+                    status: 'pendente'
+                });
+            }
             
             if (data.equipmentId) {
                 await database.update('equipment', data.equipmentId, {
-                    status: 'manutencao'
+                    status: 'manutencao',
+                    nextMaintenanceType: data.type,
+                    nextMaintenanceDate: data.dueDate
                 });
             }
             
@@ -169,6 +182,133 @@ const maintenance = {
         } catch (error) {
             console.error('Erro ao agendar manutenção:', error);
             utils.showToast('Erro ao agendar manutenção', 'error');
+        }
+    },
+
+    async schedulePeriodicMaintenance(data) {
+        const baseDate = new Date(data.dueDate);
+        const maintenances = [];
+        
+        let intervalMonths, occurrences;
+        
+        switch (data.type) {
+            case 'trimestral':
+                intervalMonths = 3;
+                occurrences = 20;
+                break;
+            case 'semestral':
+                intervalMonths = 6;
+                occurrences = 10;
+                break;
+            case 'anual':
+                intervalMonths = 12;
+                occurrences = 5;
+                break;
+            default:
+                return;
+        }
+        
+        for (let i = 0; i < occurrences; i++) {
+            const maintenanceDate = new Date(baseDate);
+            maintenanceDate.setMonth(maintenanceDate.getMonth() + (i * intervalMonths));
+            
+            const maintenanceData = {
+                ...data,
+                dueDate: utils.formatDate(maintenanceDate),
+                status: 'pendente',
+                periodicIndex: i + 1,
+                periodicTotal: occurrences,
+                periodicGroup: `${data.equipmentId}_${data.type}_${baseDate.getTime()}`
+            };
+            
+            maintenances.push(maintenanceData);
+        }
+        
+        const batch = firebase.firestore().batch();
+        
+        maintenances.forEach(maintenanceData => {
+            const docRef = firebase.firestore()
+                .collection('organizations')
+                .doc(app.currentOrg)
+                .collection('maintenance')
+                .doc();
+            
+            batch.set(docRef, {
+                ...maintenanceData,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: app.currentUser.uid
+            });
+        });
+        
+        await batch.commit();
+        
+        utils.showToast(`${occurrences} manutenções periódicas agendadas!`, 'success');
+    },
+
+    async getPeriodicMaintenances(equipmentId, type) {
+        try {
+            const maintenances = await database.query('maintenance', [
+                { field: 'equipmentId', operator: '==', value: equipmentId },
+                { field: 'type', operator: '==', value: type }
+            ]);
+            
+            const groups = {};
+            maintenances.forEach(m => {
+                if (m.periodicGroup) {
+                    if (!groups[m.periodicGroup]) {
+                        groups[m.periodicGroup] = [];
+                    }
+                    groups[m.periodicGroup].push(m);
+                }
+            });
+            
+            return groups;
+        } catch (error) {
+            console.error('Erro ao buscar manutenções periódicas:', error);
+            return {};
+        }
+    },
+
+    async cancelFuturePeriodicMaintenances(periodicGroup, fromDate) {
+        try {
+            const maintenances = await database.query('maintenance', [
+                { field: 'periodicGroup', operator: '==', value: periodicGroup },
+                { field: 'dueDate', operator: '>=', value: fromDate },
+                { field: 'status', operator: '==', value: 'pendente' }
+            ]);
+            
+            const batch = firebase.firestore().batch();
+            
+            maintenances.forEach(m => {
+                const docRef = firebase.firestore()
+                    .collection('organizations')
+                    .doc(app.currentOrg)
+                    .collection('maintenance')
+                    .doc(m.id);
+                
+                batch.delete(docRef);
+            });
+            
+            await batch.commit();
+            
+            utils.showToast('Manutenções futuras canceladas', 'success');
+        } catch (error) {
+            console.error('Erro ao cancelar manutenções:', error);
+            utils.showToast('Erro ao cancelar manutenções', 'error');
+        }
+    },
+
+    async cancelSinglePeriodicMaintenance(maintenanceId) {
+        if (confirm('Deseja realmente cancelar esta manutenção?')) {
+            try {
+                await database.delete('maintenance', maintenanceId);
+                utils.showToast('Manutenção cancelada', 'success');
+                components.closeModal();
+                this.loadMaintenanceBoards();
+            } catch (error) {
+                console.error('Erro ao cancelar manutenção:', error);
+                utils.showToast('Erro ao cancelar manutenção', 'error');
+            }
         }
     }
 };

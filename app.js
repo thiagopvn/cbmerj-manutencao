@@ -415,6 +415,7 @@ class Calendar {
         this.updateTitle();
         await this.loadEvents();
         this.renderGrid();
+        this.renderLegend();
     }
 
     updateTitle() {
@@ -443,7 +444,11 @@ class Calendar {
                     date: event.dueDate,
                     title: event.equipmentName,
                     type: event.type,
-                    status: event.status
+                    status: event.status,
+                    isPeriodic: !!event.periodicGroup,
+                    periodicInfo: event.periodicIndex && event.periodicTotal 
+                        ? `${event.periodicIndex}/${event.periodicTotal}` 
+                        : null
                 });
             });
         } catch (error) {
@@ -479,38 +484,194 @@ class Calendar {
                 cell.className += ' bg-gray-50 text-gray-400';
             }
             
+            if (utils.formatDate(cellDate) === utils.formatDate(new Date())) {
+                cell.className += ' bg-blue-50 border-blue-300';
+            }
+            
             const dateSpan = document.createElement('span');
             dateSpan.className = 'text-sm font-medium';
             dateSpan.textContent = cellDate.getDate();
             cell.appendChild(dateSpan);
             
             const dayEvents = this.events.filter(event => event.date === utils.formatDate(cellDate));
+            
+            const eventsContainer = document.createElement('div');
+            eventsContainer.className = 'mt-1 space-y-1';
+            
             dayEvents.forEach(event => {
                 const eventDiv = document.createElement('div');
-                eventDiv.className = `text-xs p-1 mt-1 rounded truncate ${this.getEventColor(event.type, event.status)}`;
-                eventDiv.textContent = event.title;
-                eventDiv.title = `${event.title} - ${MAINTENANCE_TYPES[event.type]}`;
-                cell.appendChild(eventDiv);
+                eventDiv.className = `text-xs p-1 rounded truncate cursor-pointer ${this.getEventColor(event.type, event.status)}`;
+                
+                const periodicIcon = event.isPeriodic ? '🔄 ' : '';
+                const periodicBadge = event.periodicInfo ? ` (${event.periodicInfo})` : '';
+                
+                eventDiv.textContent = `${periodicIcon}${event.title}${periodicBadge}`;
+                eventDiv.title = `${event.title} - ${MAINTENANCE_TYPES[event.type]}${event.periodicInfo ? ' - Ocorrência ' + event.periodicInfo : ''}`;
+                
+                if (event.isPeriodic) {
+                    eventDiv.className += ' border border-opacity-50';
+                }
+                
+                eventDiv.onclick = () => this.showEventDetails(event.id);
+                eventsContainer.appendChild(eventDiv);
             });
+            
+            cell.appendChild(eventsContainer);
+            
+            if (dayEvents.length > 3) {
+                const moreIndicator = document.createElement('div');
+                moreIndicator.className = 'text-xs text-gray-500 text-center mt-1';
+                moreIndicator.textContent = `+${dayEvents.length - 3} mais`;
+                cell.appendChild(moreIndicator);
+            }
             
             grid.appendChild(cell);
         }
     }
 
+    renderLegend() {
+        const calendarContainer = document.getElementById('calendar-container');
+        const existingLegend = document.getElementById('calendar-legend');
+        
+        if (existingLegend) {
+            existingLegend.remove();
+        }
+        
+        const legend = document.createElement('div');
+        legend.id = 'calendar-legend';
+        legend.className = 'mt-4 p-4 bg-gray-50 rounded-lg';
+        legend.innerHTML = `
+            <h4 class="font-semibold text-sm text-gray-700 mb-2">Legenda:</h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-yellow-100 rounded border border-yellow-300"></span>
+                    <span>Diária</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-purple-100 rounded border border-purple-300"></span>
+                    <span>Trimestral</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-indigo-100 rounded border border-indigo-300"></span>
+                    <span>Semestral</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-pink-100 rounded border border-pink-300"></span>
+                    <span>Anual</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-red-100 rounded border border-red-300"></span>
+                    <span>Corretiva</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-orange-100 rounded border border-orange-300"></span>
+                    <span>Reparo</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-4 h-4 bg-green-100 rounded border border-green-300"></span>
+                    <span>Concluída</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span>🔄</span>
+                    <span>Periódica</span>
+                </div>
+            </div>
+        `;
+        
+        calendarContainer.appendChild(legend);
+    }
+
     getEventColor(type, status) {
-        if (status === 'concluida') return 'bg-green-100 text-green-800';
-        if (status === 'em_andamento') return 'bg-blue-100 text-blue-800';
+        if (status === 'concluida') return 'bg-green-100 text-green-800 border-green-300';
+        if (status === 'em_andamento') return 'bg-blue-100 text-blue-800 border-blue-300';
         
         const colors = {
-            diaria: 'bg-yellow-100 text-yellow-800',
-            trimestral: 'bg-purple-100 text-purple-800',
-            semestral: 'bg-indigo-100 text-indigo-800',
-            anual: 'bg-pink-100 text-pink-800',
-            corretiva: 'bg-red-100 text-red-800',
-            reparo: 'bg-orange-100 text-orange-800'
+            diaria: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            trimestral: 'bg-purple-100 text-purple-800 border-purple-300',
+            semestral: 'bg-indigo-100 text-indigo-800 border-indigo-300',
+            anual: 'bg-pink-100 text-pink-800 border-pink-300',
+            corretiva: 'bg-red-100 text-red-800 border-red-300',
+            reparo: 'bg-orange-100 text-orange-800 border-orange-300'
         };
         
-        return colors[type] || 'bg-gray-100 text-gray-800';
+        return colors[type] || 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+
+    async showEventDetails(maintenanceId) {
+        try {
+            const maintenance = await database.get('maintenance', maintenanceId);
+            if (!maintenance) return;
+            
+            const modal = components.createModal('event-details-modal', 
+                `Detalhes da Manutenção - ${maintenance.equipmentName}`, `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tipo</label>
+                            <p class="text-gray-900">${MAINTENANCE_TYPES[maintenance.type]}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Data Prevista</label>
+                            <p class="text-gray-900">${utils.formatDateBR(new Date(maintenance.dueDate))}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Status</label>
+                            <p class="text-gray-900">
+                                <span class="px-2 py-1 text-xs rounded-full ${
+                                    maintenance.status === 'concluida' ? 'bg-green-100 text-green-800' :
+                                    maintenance.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-gray-100 text-gray-800'
+                                }">
+                                    ${maintenance.status === 'concluida' ? 'Concluída' :
+                                      maintenance.status === 'em_andamento' ? 'Em Andamento' : 'Pendente'}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Responsável</label>
+                            <p class="text-gray-900">${maintenance.responsibleName}</p>
+                        </div>
+                    </div>
+                    
+                    ${maintenance.periodicGroup ? `
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                            <p class="text-sm text-purple-800">
+                                <strong>Manutenção Periódica</strong><br>
+                                Ocorrência ${maintenance.periodicIndex} de ${maintenance.periodicTotal}
+                            </p>
+                            <button onclick="components.viewPeriodicMaintenanceGroup('${maintenance.periodicGroup}')" 
+                                    class="mt-2 text-purple-600 hover:text-purple-800 text-sm font-medium">
+                                Ver todas as ocorrências →
+                            </button>
+                        </div>
+                    ` : ''}
+                    
+                    ${maintenance.description ? `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                            <p class="text-gray-900">${maintenance.description}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="flex justify-end gap-3">
+                        <button onclick="components.closeModal()" class="btn-secondary">Fechar</button>
+                        ${maintenance.status === 'pendente' ? `
+                            <button onclick="maintenance.startMaintenance('${maintenanceId}')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+                                Iniciar Manutenção
+                            </button>
+                        ` : maintenance.status === 'em_andamento' ? `
+                            <button onclick="maintenance.completeMaintenance('${maintenanceId}')" 
+                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors">
+                                Concluir Manutenção
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `);
+        } catch (error) {
+            console.error('Erro ao mostrar detalhes do evento:', error);
+        }
     }
 
     previousMonth() {
@@ -520,6 +681,16 @@ class Calendar {
 
     nextMonth() {
         this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+        this.render();
+    }
+
+    previousYear() {
+        this.currentDate.setFullYear(this.currentDate.getFullYear() - 1);
+        this.render();
+    }
+
+    nextYear() {
+        this.currentDate.setFullYear(this.currentDate.getFullYear() + 1);
         this.render();
     }
 }

@@ -120,21 +120,31 @@ const components = {
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Manutenção</label>
-                        <select id="maintenance-type" required class="input-field">
+                        <select id="maintenance-type" required class="input-field" onchange="components.updatePeriodicPreview()">
                             ${Object.entries(MAINTENANCE_TYPES).map(([key, value]) => 
                                 `<option value="${key}">${value}</option>`
                             ).join('')}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Prevista</label>
-                        <input type="date" id="maintenance-due-date" required class="input-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+                        <input type="date" id="maintenance-due-date" required class="input-field" onchange="components.updatePeriodicPreview()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
                         <input type="text" id="maintenance-responsible" required class="input-field">
                     </div>
                 </div>
+                
+                <div id="periodic-preview" class="hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-900 mb-2">📅 Prévia das Manutenções Periódicas</h4>
+                        <p class="text-sm text-blue-800 mb-3">Serão criadas as seguintes manutenções:</p>
+                        <div id="periodic-dates-list" class="max-h-40 overflow-y-auto space-y-1"></div>
+                        <p class="text-xs text-blue-600 mt-2">* Todas as manutenções serão agendadas automaticamente</p>
+                    </div>
+                </div>
+                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                     <textarea id="maintenance-description" rows="3" class="input-field" placeholder="Descreva o que deve ser feito..."></textarea>
@@ -152,6 +162,62 @@ const components = {
             e.preventDefault();
             this.scheduleNewMaintenance();
         });
+    },
+
+    updatePeriodicPreview() {
+        const type = document.getElementById('maintenance-type').value;
+        const dateInput = document.getElementById('maintenance-due-date').value;
+        const previewDiv = document.getElementById('periodic-preview');
+        const datesList = document.getElementById('periodic-dates-list');
+        
+        const periodicTypes = ['trimestral', 'semestral', 'anual'];
+        
+        if (periodicTypes.includes(type) && dateInput) {
+            previewDiv.classList.remove('hidden');
+            datesList.innerHTML = '';
+            
+            const baseDate = new Date(dateInput);
+            let intervalMonths, occurrences;
+            
+            switch (type) {
+                case 'trimestral':
+                    intervalMonths = 3;
+                    occurrences = 20;
+                    break;
+                case 'semestral':
+                    intervalMonths = 6;
+                    occurrences = 10;
+                    break;
+                case 'anual':
+                    intervalMonths = 12;
+                    occurrences = 5;
+                    break;
+            }
+            
+            const maxPreview = Math.min(10, occurrences);
+            
+            for (let i = 0; i < maxPreview; i++) {
+                const date = new Date(baseDate);
+                date.setMonth(date.getMonth() + (i * intervalMonths));
+                
+                const dateItem = document.createElement('div');
+                dateItem.className = 'text-sm text-blue-700';
+                dateItem.innerHTML = `
+                    <span class="font-medium">${i + 1}ª manutenção:</span> 
+                    ${utils.formatDateBR(date)}
+                `;
+                datesList.appendChild(dateItem);
+            }
+            
+            if (occurrences > maxPreview) {
+                const moreItem = document.createElement('div');
+                moreItem.className = 'text-sm text-blue-600 font-medium mt-2';
+                moreItem.textContent = `... e mais ${occurrences - maxPreview} manutenções`;
+                datesList.appendChild(moreItem);
+            }
+        } else {
+            previewDiv.classList.add('hidden');
+        }
     },
 
     async loadEquipmentOptions(selectId) {
@@ -279,21 +345,31 @@ const components = {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Manutenção</label>
-                        <select id="schedule-type" required class="input-field">
+                        <select id="schedule-type" required class="input-field" onchange="components.updateSchedulePeriodicPreview()">
                             ${Object.entries(MAINTENANCE_TYPES).map(([key, value]) => 
                                 `<option value="${key}">${value}</option>`
                             ).join('')}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Prevista</label>
-                        <input type="date" id="schedule-due-date" required class="input-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+                        <input type="date" id="schedule-due-date" required class="input-field" onchange="components.updateSchedulePeriodicPreview()">
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
                     <input type="text" id="schedule-responsible" required class="input-field">
                 </div>
+                
+                <div id="schedule-periodic-preview" class="hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-900 mb-2">📅 Prévia das Manutenções Periódicas</h4>
+                        <p class="text-sm text-blue-800 mb-3">Serão criadas as seguintes manutenções:</p>
+                        <div id="schedule-periodic-dates-list" class="max-h-40 overflow-y-auto space-y-1"></div>
+                        <p class="text-xs text-blue-600 mt-2">* Todas as manutenções serão agendadas automaticamente</p>
+                    </div>
+                </div>
+                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                     <textarea id="schedule-description" rows="3" class="input-field" placeholder="Descreva o que deve ser feito..."></textarea>
@@ -309,6 +385,62 @@ const components = {
             e.preventDefault();
             this.submitMaintenanceSchedule();
         });
+    },
+
+    updateSchedulePeriodicPreview() {
+        const type = document.getElementById('schedule-type').value;
+        const dateInput = document.getElementById('schedule-due-date').value;
+        const previewDiv = document.getElementById('schedule-periodic-preview');
+        const datesList = document.getElementById('schedule-periodic-dates-list');
+        
+        const periodicTypes = ['trimestral', 'semestral', 'anual'];
+        
+        if (periodicTypes.includes(type) && dateInput) {
+            previewDiv.classList.remove('hidden');
+            datesList.innerHTML = '';
+            
+            const baseDate = new Date(dateInput);
+            let intervalMonths, occurrences;
+            
+            switch (type) {
+                case 'trimestral':
+                    intervalMonths = 3;
+                    occurrences = 20;
+                    break;
+                case 'semestral':
+                    intervalMonths = 6;
+                    occurrences = 10;
+                    break;
+                case 'anual':
+                    intervalMonths = 12;
+                    occurrences = 5;
+                    break;
+            }
+            
+            const maxPreview = Math.min(10, occurrences);
+            
+            for (let i = 0; i < maxPreview; i++) {
+                const date = new Date(baseDate);
+                date.setMonth(date.getMonth() + (i * intervalMonths));
+                
+                const dateItem = document.createElement('div');
+                dateItem.className = 'text-sm text-blue-700';
+                dateItem.innerHTML = `
+                    <span class="font-medium">${i + 1}ª manutenção:</span> 
+                    ${utils.formatDateBR(date)}
+                `;
+                datesList.appendChild(dateItem);
+            }
+            
+            if (occurrences > maxPreview) {
+                const moreItem = document.createElement('div');
+                moreItem.className = 'text-sm text-blue-600 font-medium mt-2';
+                moreItem.textContent = `... e mais ${occurrences - maxPreview} manutenções`;
+                datesList.appendChild(moreItem);
+            }
+        } else {
+            previewDiv.classList.add('hidden');
+        }
     },
 
     async submitMaintenanceSchedule() {
@@ -460,6 +592,86 @@ const components = {
         } catch (error) {
             console.error('Erro ao visualizar histórico:', error);
             utils.showToast('Erro ao carregar histórico', 'error');
+        }
+    },
+
+    async viewPeriodicMaintenanceGroup(periodicGroup) {
+        try {
+            const maintenances = await database.query('maintenance', [
+                { field: 'periodicGroup', operator: '==', value: periodicGroup }
+            ]);
+            
+            const sortedMaintenances = maintenances.sort((a, b) => 
+                new Date(a.dueDate) - new Date(b.dueDate)
+            );
+            
+            const modal = this.createModal('periodic-group-modal', 'Grupo de Manutenções Periódicas', `
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-2">Informações do Grupo</h4>
+                        <p class="text-sm text-gray-600">
+                            <strong>Equipamento:</strong> ${sortedMaintenances[0]?.equipmentName}<br>
+                            <strong>Tipo:</strong> ${MAINTENANCE_TYPES[sortedMaintenances[0]?.type]}<br>
+                            <strong>Total de manutenções:</strong> ${sortedMaintenances[0]?.periodicTotal}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-3">Cronograma Completo</h4>
+                        <div class="max-h-96 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left">Nº</th>
+                                        <th class="px-4 py-2 text-left">Data</th>
+                                        <th class="px-4 py-2 text-left">Status</th>
+                                        <th class="px-4 py-2 text-left">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${sortedMaintenances.map(m => `
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2">${m.periodicIndex}</td>
+                                            <td class="px-4 py-2">${utils.formatDateBR(new Date(m.dueDate))}</td>
+                                            <td class="px-4 py-2">
+                                                <span class="px-2 py-1 text-xs rounded-full ${
+                                                    m.status === 'concluida' ? 'bg-green-100 text-green-800' :
+                                                    m.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' :
+                                                    new Date(m.dueDate) < new Date() ? 'bg-red-100 text-red-800' :
+                                                    'bg-gray-100 text-gray-800'
+                                                }">
+                                                    ${m.status === 'concluida' ? 'Concluída' :
+                                                      m.status === 'em_andamento' ? 'Em Andamento' :
+                                                      new Date(m.dueDate) < new Date() ? 'Atrasada' : 'Pendente'}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2">
+                                                ${m.status === 'pendente' ? `
+                                                    <button onclick="maintenance.cancelSinglePeriodicMaintenance('${m.id}')" 
+                                                            class="text-red-600 hover:text-red-800 text-xs">
+                                                        Cancelar
+                                                    </button>
+                                                ` : '-'}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <button onclick="maintenance.cancelFuturePeriodicMaintenances('${periodicGroup}', '${utils.formatDate(new Date())}')" 
+                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors text-sm">
+                            Cancelar Manutenções Futuras
+                        </button>
+                        <button onclick="components.closeModal()" class="btn-secondary">Fechar</button>
+                    </div>
+                </div>
+            `);
+        } catch (error) {
+            console.error('Erro ao visualizar grupo de manutenções:', error);
+            utils.showToast('Erro ao carregar manutenções', 'error');
         }
     },
 
