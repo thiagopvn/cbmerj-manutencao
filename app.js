@@ -315,11 +315,10 @@ class CBMERJApp {
             model.includes(searchTerm);
             
         const matchesType = !typeFilter || 
-            (typeFilter === 'viatura' && typeText === 'Viatura') ||
-            (typeFilter === 'bomba' && typeText === "Bomba d'água") ||
-            (typeFilter === 'gerador' && typeText === 'Gerador') ||
-            (typeFilter === 'motosserra' && typeText === 'Motosserra') ||
-            (typeFilter === 'outros' && typeText === 'Outros');
+            (typeFilter === 'motomecanizados' && typeText === 'Materiais motomecanizados') ||
+            (typeFilter === 'sapa' && typeText === 'Materiais de sapa') ||
+            (typeFilter === 'altura' && typeText === 'Material de altura') ||
+            (typeFilter === 'incendio' && typeText === 'Material de incêndio');
             
         const matchesStatus = !statusFilter || 
             (statusFilter === 'ativo' && statusText === 'Ativo') ||

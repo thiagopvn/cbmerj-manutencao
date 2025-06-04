@@ -18,13 +18,12 @@ const MAINTENANCE_TYPES = {
 };
 
 const EQUIPMENT_TYPES = {
-    viatura: 'Viatura',
-    bomba: 'Bomba d\'água',
-    gerador: 'Gerador',
-    motosserra: 'Motosserra',
-    outros: 'Outros'
+    motomecanizados: 'Materiais motomecanizados',
+    sapa: 'Materiais de sapa',
+    altura: 'Material de altura',
+    incendio: 'Material de incêndio'
 };
-
+    
 const EQUIPMENT_STATUS = {
     ativo: 'Ativo',
     manutencao: 'Em Manutenção',
