@@ -1028,3 +1028,21 @@ th, td {
 .h-4 {
     height: 1rem;
 }
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.focus\:ring-2:focus {
+    box-shadow: 0 0 0 2px var(--primary);
+}
+
+.focus\:ring-red-500:focus {
+    box-shadow: 0 0 0 2px #DC143C;
+}

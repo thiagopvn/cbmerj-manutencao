@@ -279,35 +279,56 @@ class CBMERJApp {
     }
 
     setupEquipmentFilters() {
-        const searchInput = document.getElementById('equipment-search');
-        const typeFilter = document.getElementById('equipment-type-filter');
-        const statusFilter = document.getElementById('equipment-status-filter');
-        
-        [searchInput, typeFilter, statusFilter].forEach(element => {
-            element.addEventListener('change', () => this.filterEquipment());
-            element.addEventListener('keyup', () => this.filterEquipment());
-        });
+    const searchInput = document.getElementById('equipment-search');
+    const typeFilter = document.getElementById('equipment-type-filter');
+    const statusFilter = document.getElementById('equipment-status-filter');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', () => this.filterEquipment());
     }
+    
+    if (typeFilter) {
+        typeFilter.addEventListener('change', () => this.filterEquipment());
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => this.filterEquipment());
+    }
+}
 
     filterEquipment() {
-        const searchTerm = document.getElementById('equipment-search').value.toLowerCase();
-        const typeFilter = document.getElementById('equipment-type-filter').value;
-        const statusFilter = document.getElementById('equipment-status-filter').value;
+    const searchTerm = document.getElementById('equipment-search').value.toLowerCase();
+    const typeFilter = document.getElementById('equipment-type-filter').value;
+    const statusFilter = document.getElementById('equipment-status-filter').value;
+    
+    const rows = document.querySelectorAll('#equipment-table-body tr');
+    
+    rows.forEach(row => {
+        const nameCell = row.cells[0];
+        const name = nameCell.querySelector('.text-sm.font-medium').textContent.toLowerCase();
+        const model = nameCell.querySelector('.text-sm.text-gray-500').textContent.toLowerCase();
+        const typeText = row.cells[1].textContent.trim();
+        const statusText = row.cells[2].querySelector('span').textContent.trim();
         
-        const rows = document.querySelectorAll('#equipment-table-body tr');
+        const matchesSearch = !searchTerm || 
+            name.includes(searchTerm) || 
+            model.includes(searchTerm);
+            
+        const matchesType = !typeFilter || 
+            (typeFilter === 'viatura' && typeText === 'Viatura') ||
+            (typeFilter === 'bomba' && typeText === "Bomba d'água") ||
+            (typeFilter === 'gerador' && typeText === 'Gerador') ||
+            (typeFilter === 'motosserra' && typeText === 'Motosserra') ||
+            (typeFilter === 'outros' && typeText === 'Outros');
+            
+        const matchesStatus = !statusFilter || 
+            (statusFilter === 'ativo' && statusText === 'Ativo') ||
+            (statusFilter === 'manutencao' && statusText === 'Em Manutenção') ||
+            (statusFilter === 'inativo' && statusText === 'Inativo');
         
-        rows.forEach(row => {
-            const name = row.cells[0].textContent.toLowerCase();
-            const type = row.cells[1].textContent;
-            const status = row.cells[2].textContent;
-            
-            const matchesSearch = !searchTerm || name.includes(searchTerm);
-            const matchesType = !typeFilter || type.includes(EQUIPMENT_TYPES[typeFilter]);
-            const matchesStatus = !statusFilter || status.includes(EQUIPMENT_STATUS[statusFilter]);
-            
-            row.style.display = matchesSearch && matchesType && matchesStatus ? '' : 'none';
-        });
-    }
+        row.style.display = matchesSearch && matchesType && matchesStatus ? '' : 'none';
+    });
+}
 
     async loadMaintenance() {
         maintenance.loadMaintenanceBoards();
