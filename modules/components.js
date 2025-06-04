@@ -463,6 +463,212 @@ const components = {
         }
     },
 
+    openInoperantModal(equipmentId) {
+        const modal = this.createModal('inoperant-modal', 'Registrar Inoperância', `
+            <form id="inoperant-form" class="space-y-4">
+                <div class="alert alert-warning">
+                    <p class="font-semibold">Atenção!</p>
+                    <p class="text-sm">Você está prestes a marcar este equipamento como INOPERANTE. Esta ação criará um registro permanente no sistema.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data da Inoperância *</label>
+                        <input type="date" id="inoperant-date" required class="input-field" value="${utils.formatDate(new Date())}">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Número do SEI *</label>
+                        <input type="text" id="inoperant-sei" required class="input-field" placeholder="Ex: 12345.678901/2024-12">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Motivo da Inoperância *</label>
+                    <select id="inoperant-reason" required class="input-field">
+                        <option value="">Selecione o motivo</option>
+                        <option value="dano_irreparavel">Dano Irreparável</option>
+                        <option value="obsolescencia">Obsolescência</option>
+                        <option value="acidente">Acidente/Sinistro</option>
+                        <option value="desgaste_natural">Desgaste Natural</option>
+                        <option value="incendio">Incêndio</option>
+                        <option value="roubo">Roubo/Furto</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição Detalhada *</label>
+                    <textarea id="inoperant-description" required rows="3" class="input-field" 
+                        placeholder="Descreva detalhadamente o motivo da inoperância..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Local onde se encontra *</label>
+                    <input type="text" id="inoperant-location" required class="input-field" 
+                        placeholder="Ex: Depósito do Quartel, Oficina Externa, etc.">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fotos do Equipamento (opcional)</label>
+                    <input type="file" id="inoperant-photos" multiple accept="image/*" class="input-field">
+                    <p class="text-xs text-gray-500 mt-1">Selecione até 5 fotos que comprovem o estado do equipamento</p>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="inoperant-confirm" required class="mr-2">
+                        <span class="text-sm">Confirmo que este equipamento está inoperante e todas as informações estão corretas</span>
+                    </label>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="components.closeModal()" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors">
+                        Confirmar Inoperância
+                    </button>
+                </div>
+            </form>
+        `);
+        
+        document.getElementById('inoperant-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.submitInoperantStatus(equipmentId);
+        });
+    },
+
+    async submitInoperantStatus(equipmentId) {
+        try {
+            const photos = document.getElementById('inoperant-photos').files;
+            const photoUrls = [];
+            
+            if (photos.length > 0) {
+                utils.showToast('Fazendo upload das fotos...', 'info');
+                for (let i = 0; i < Math.min(photos.length, 5); i++) {
+                    const photo = photos[i];
+                    const path = `inoperant/${equipmentId}/photos/${Date.now()}_${i}`;
+                    const uploadResult = await database.uploadFile(photo, path);
+                    photoUrls.push(uploadResult.url);
+                }
+            }
+            
+            const inoperantData = {
+                equipmentId: equipmentId,
+                date: document.getElementById('inoperant-date').value,
+                seiNumber: document.getElementById('inoperant-sei').value,
+                reason: document.getElementById('inoperant-reason').value,
+                description: document.getElementById('inoperant-description').value,
+                location: document.getElementById('inoperant-location').value,
+                photos: photoUrls,
+                registeredBy: app.currentUser.uid,
+                registeredByEmail: app.currentUser.email,
+                registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            await database.create('equipment_inoperant_records', inoperantData);
+            
+            await database.update('equipment', equipmentId, {
+                status: 'inativo',
+                inoperantDate: inoperantData.date,
+                inoperantReason: inoperantData.reason,
+                currentLocation: inoperantData.location
+            });
+            
+            utils.showToast('Equipamento marcado como inoperante com sucesso!', 'success');
+            this.closeModal();
+            app.loadEquipment();
+            
+        } catch (error) {
+            console.error('Erro ao registrar inoperância:', error);
+            utils.showToast('Erro ao registrar inoperância', 'error');
+        }
+    },
+
+    async viewInoperantRecord(equipmentId) {
+        try {
+            const records = await database.query('equipment_inoperant_records', [
+                { field: 'equipmentId', operator: '==', value: equipmentId }
+            ]);
+            
+            if (records.length === 0) {
+                utils.showToast('Registro de inoperância não encontrado', 'error');
+                return;
+            }
+            
+            const record = records[0];
+            const equipment = await database.get('equipment', equipmentId);
+            
+            const reasonLabels = {
+                dano_irreparavel: 'Dano Irreparável',
+                obsolescencia: 'Obsolescência',
+                acidente: 'Acidente/Sinistro',
+                desgaste_natural: 'Desgaste Natural',
+                incendio: 'Incêndio',
+                roubo: 'Roubo/Furto',
+                outro: 'Outro'
+            };
+            
+            const modal = this.createModal('view-inoperant-modal', `Registro de Inoperância - ${equipment.name}`, `
+                <div class="space-y-4">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-red-800 font-semibold">Equipamento Inoperante</p>
+                        <p class="text-sm text-red-600">Este equipamento foi declarado inoperante e não pode ser utilizado.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Data da Inoperância</label>
+                            <p class="text-gray-900">${utils.formatDateBR(new Date(record.date))}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Número SEI</label>
+                            <p class="text-gray-900">${record.seiNumber}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Motivo</label>
+                            <p class="text-gray-900">${reasonLabels[record.reason] || record.reason}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Local Atual</label>
+                            <p class="text-gray-900">${record.location}</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Descrição Detalhada</label>
+                        <p class="text-gray-900 whitespace-pre-wrap">${record.description}</p>
+                    </div>
+                    
+                    ${record.photos && record.photos.length > 0 ? `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fotos do Estado do Equipamento</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                ${record.photos.map(photo => `
+                                    <img src="${photo}" alt="Foto da inoperância" 
+                                         class="w-full h-32 object-cover rounded cursor-pointer border border-gray-300" 
+                                         onclick="window.open('${photo}', '_blank')">
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="border-t pt-4">
+                        <p class="text-sm text-gray-500">
+                            Registrado por: ${record.registeredByEmail}<br>
+                            Data do registro: ${record.registeredAt ? utils.formatDateTime(record.registeredAt.toDate()) : 'N/A'}
+                        </p>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button onclick="components.closeModal()" class="btn-secondary">Fechar</button>
+                    </div>
+                </div>
+            `);
+        } catch (error) {
+            console.error('Erro ao visualizar registro de inoperância:', error);
+            utils.showToast('Erro ao carregar registro de inoperância', 'error');
+        }
+    },
+
     createModal(id, title, content) {
         this.closeModal();
         

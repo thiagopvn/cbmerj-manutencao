@@ -189,47 +189,52 @@ class CBMERJApp {
     }
 
     async loadEquipment() {
-        try {
-            const equipmentSnapshot = await this.db.collection('organizations')
-                .doc(this.currentOrg)
-                .collection('equipment')
-                .orderBy('name')
-                .get();
-            
-            const tableBody = document.getElementById('equipment-table-body');
-            tableBody.innerHTML = '';
-            
-            equipmentSnapshot.forEach(doc => {
-                const equipment = doc.data();
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${equipment.name}</div>
-                            <div class="text-sm text-gray-500">${equipment.model || ''}</div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">${EQUIPMENT_TYPES[equipment.type]}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(equipment.status)}"">
-                            ${EQUIPMENT_STATUS[equipment.status]}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">${equipment.lastMaintenance ? utils.formatDate(equipment.lastMaintenance.toDate()) : 'Nunca'}</td>
-                    <td class="px-6 py-4 text-sm space-x-2">
-                        <button onclick="components.viewEquipment('${doc.id}')" class="text-blue-600 hover:text-blue-800">Ver</button>
-                        <button onclick="components.editEquipment('${doc.id}')" class="text-green-600 hover:text-green-800">Editar</button>
+    try {
+        const equipmentSnapshot = await this.db.collection('organizations')
+            .doc(this.currentOrg)
+            .collection('equipment')
+            .orderBy('name')
+            .get();
+        
+        const tableBody = document.getElementById('equipment-table-body');
+        tableBody.innerHTML = '';
+        
+        equipmentSnapshot.forEach(doc => {
+            const equipment = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-6 py-4">
+                    <div>
+                        <div class="text-sm font-medium text-gray-900">${equipment.name}</div>
+                        <div class="text-sm text-gray-500">${equipment.model || ''}</div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-900">${EQUIPMENT_TYPES[equipment.type]}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(equipment.status)}">
+                        ${EQUIPMENT_STATUS[equipment.status]}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-900">${equipment.lastMaintenance ? utils.formatDate(equipment.lastMaintenance.toDate()) : 'Nunca'}</td>
+                <td class="px-6 py-4 text-sm space-x-2">
+                    <button onclick="components.viewEquipment('${doc.id}')" class="text-blue-600 hover:text-blue-800">Ver</button>
+                    <button onclick="components.editEquipment('${doc.id}')" class="text-green-600 hover:text-green-800">Editar</button>
+                    ${equipment.status !== 'inativo' ? `
                         <button onclick="maintenance.scheduleForEquipment('${doc.id}')" class="text-purple-600 hover:text-purple-800">Manutenção</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-            
-            this.setupEquipmentFilters();
-        } catch (error) {
-            console.error('Erro ao carregar equipamentos:', error);
-        }
+                        <button onclick="components.openInoperantModal('${doc.id}')" class="text-red-600 hover:text-red-800">Inoperante</button>
+                    ` : `
+                        <button onclick="components.viewInoperantRecord('${doc.id}')" class="text-gray-600 hover:text-gray-800">Ver Inoperância</button>
+                    `}
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        this.setupEquipmentFilters();
+    } catch (error) {
+        console.error('Erro ao carregar equipamentos:', error);
     }
+}
 
     getStatusColor(status) {
         const colors = {
