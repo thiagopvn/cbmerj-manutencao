@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBMERJ - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body class="bg-gradient-to-br from-red-600 to-red-800 min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white text-3xl">🚒</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">CBMERJ</h1>
+            <p class="text-gray-600">Sistema de Manutenção</p>
+        </div>
+
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+            </div>
+
+            <div>
+                <label for="organization" class="block text-sm font-medium text-gray-700 mb-2">Quartel</label>
+                <select id="organization" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                    <option value="">Selecione o quartel</option>
+                    <option value="gocg">GOCG</option>
+                    <option value="17gbm">17° GBM</option>
+                </select>
+            </div>
+
+            <button type="submit" class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors font-medium">
+                Entrar
+            </button>
+        </form>
+
+        <div id="error-message" class="mt-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md hidden"></div>
+        <div id="loading" class="mt-4 text-center hidden">
+            <div class="inline-block w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <span class="ml-2 text-gray-600">Entrando...</span>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const organization = document.getElementById('organization').value;
+            
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error-message').classList.add('hidden');
+            
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                await db.collection('users').doc(user.uid).set({
+                    email: user.email,
+                    organization: organization,
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                localStorage.setItem('cbmerj_org', organization);
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                document.getElementById('loading').classList.add('hidden');
+                let errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'Usuário não encontrado.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Senha incorreta.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Email inválido.';
+                        break;
+                }
+                
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = errorMessage;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

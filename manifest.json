@@ -1,0 +1,112 @@
+{
+    "name": "CBMERJ - Sistema de Manutenção",
+    "short_name": "CBMERJ Manutenção",
+    "description": "Sistema de cronograma de manutenção de materiais motomecanizados do CBMERJ",
+    "version": "1.0.0",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#DC143C",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "pt-BR",
+    "dir": "ltr",
+    "categories": ["productivity", "utilities"],
+    "icons": [
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "72x72",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "96x96",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "128x128",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "144x144",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "152x152",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "384x384",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23DC143C'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🚒%3C/text%3E%3C/svg%3E",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "Visualizar painel principal",
+            "url": "/index.html#dashboard",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23DC143C'%3E%3Cpath d='M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z'/%3E%3C/svg%3E",
+                    "sizes": "96x96",
+                    "type": "image/svg+xml"
+                }
+            ]
+        },
+        {
+            "name": "Nova Manutenção",
+            "short_name": "Manutenção",
+            "description": "Cadastrar nova manutenção",
+            "url": "/index.html#maintenance",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23DC143C'%3E%3Cpath d='M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z'/%3E%3C/svg%3E",
+                    "sizes": "96x96",
+                    "type": "image/svg+xml"
+                }
+            ]
+        },
+        {
+            "name": "Cronograma",
+            "short_name": "Cronograma",
+            "description": "Ver cronograma de manutenções",
+            "url": "/index.html#schedule",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23DC143C'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E",
+                    "sizes": "96x96",
+                    "type": "image/svg+xml"
+                }
+            ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 640'%3E%3Crect width='320' height='640' fill='%23f8f9fa'/%3E%3Crect x='0' y='0' width='320' height='60' fill='%23DC143C'/%3E%3Ctext x='20' y='35' fill='white' font-size='16' font-weight='bold'%3ECBMERJ Sistema%3C/text%3E%3Crect x='20' y='80' width='280' height='120' fill='white' rx='8'/%3E%3Ctext x='30' y='105' fill='%23374151' font-size='14' font-weight='600'%3EDashboard%3C/text%3E%3Ctext x='30' y='125' fill='%236B7280' font-size='12'%3EVisão geral dos equipamentos%3C/text%3E%3C/svg%3E",
+            "sizes": "320x640",
+            "type": "image/svg+xml",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 480'%3E%3Crect width='640' height='480' fill='%23f8f9fa'/%3E%3Crect x='0' y='0' width='640' height='60' fill='%23DC143C'/%3E%3Ctext x='20' y='35' fill='white' font-size='18' font-weight='bold'%3ECBMERJ - Sistema de Manutenção%3C/text%3E%3Crect x='20' y='80' width='600' height='200' fill='white' rx='8'/%3E%3Ctext x='30' y='105' fill='%23374151' font-size='16' font-weight='600'%3EGestão de Equipamentos%3C/text%3E%3Ctext x='30' y='125' fill='%236B7280' font-size='14'%3ECadastre e gerencie equipamentos motomecanizados%3C/text%3E%3C/svg%3E",
+            "sizes": "640x480",
+            "type": "image/svg+xml",
+            "form_factor": "wide"
+        }
+    ]
+}
